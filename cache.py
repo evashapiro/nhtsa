@@ -10,7 +10,7 @@ class Cache(object):
 		if os.path.isfile(filename):
 			with open(filename, 'r') as f:
 				self._cache = json.load(f)
-		signal.signal(signal.SIGINT, lambda signum, frame: self._persist())
+		signal.signal(signal.SIGINT, lambda signum, frame: self.persist())
 
 	def contains(self, key):
 		return key in self._cache
@@ -23,7 +23,7 @@ class Cache(object):
 	def put(self, key, value):
 		self._cache[key] = value
 
-	def _persist(self):
+	def persist(self):
 		with open(self._filename, 'w') as f:
 			json.dump(self._cache, f)
 		sys.exit(1)
