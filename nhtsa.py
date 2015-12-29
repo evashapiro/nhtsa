@@ -34,6 +34,7 @@ def do_api_request(fmt_string, *args):
 		print "404 error: " + path
 		return []
 	elif resp.status_code != 200:
+		api_cache.persist()
 		raise APIError(url, resp)
 	try:
 		results = resp.json()['Results']
