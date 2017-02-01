@@ -1,13 +1,14 @@
 Programmatic access to the NHTSA New Car Assessment Program (NCAP) - http://www.nhtsa.gov/webapi/Default.aspx?SafetyRatings/API/5.
 
-`nhtsa.py` will download vehicle data for all vehicles available through the NCAP API into the file `vehicles.json`.
-
 Interruptions (e.g. `CTRL-C`) are handled by caching API results in a file and using cached results when resumed.
 
 ### Instructions
 ```
 > pip install requests
-> python nhtsa.py
+> python safety_ratings.py
+# results in safety_ratings.json
+> python vpic.py
+# results in vpic_models.json
 ```
 
 Then wait...
