@@ -1,4 +1,5 @@
 import nhtsa
+import json
 
 
 class API(nhtsa.API):
@@ -9,20 +10,32 @@ class API(nhtsa.API):
 		return self.do_api_request('/vehicles/GetAllMakes')
 
 	def get_models_for_make(self, make):
+		if '.' in make:
+			make = make[:make.find('.')]
+		if '/' in make:
+			make = make[:make.find('/')]
 		return self.do_api_request('/vehicles/GetModelsForMake/{0}', make)
 
 
 if __name__ == '__main__':
 	api = API()
-	models = []
+	all_models = []
+	missing = []
 	for i, res, total_i in nhtsa.enum_with_count(api.get_all_makes()):
 		make = res['Make_Name']
-		for j, res, total_j in nhtsa.enum_with_count(api.get_models_for_make(make)):
+		try:
+			models = api.get_models_for_make(make)
+		except nhtsa.APIError as err:
+			print(err)
+			missing.append(make)
+		for j, res, total_j in nhtsa.enum_with_count(models):
 			model = res['Model_Name']
 			print(make, model,
 				'Make: {0}/{1} Model: {2}/{3}'.format(
 					i, total_i, j, total_j))
-			models.append(res)
+			all_models.append(res)
 
 	with open('vpic_models.json', 'w') as f:
-		json.dump(models, f)
+		json.dump(all_models, f)
+	with open('vpic_missing.json', 'w') as f:
+		json.dump(missing, f)

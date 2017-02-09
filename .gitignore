@@ -1,2 +1,7 @@
 *.pyc
 *.json
+*.dta
+*.xlsx
+*.csv
+*.xls
+*.db

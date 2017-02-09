@@ -1,4 +1,5 @@
 import nhtsa
+import json
 
 
 class API(nhtsa.API):
@@ -44,5 +45,5 @@ if __name__ == '__main__':
 
 	with open('safety_ratings.json', 'w') as f:
 		json.dump(vehicles, f)
-	with open('missing.json', 'w') as f:
+	with open('missing_safety_ratings.json', 'w') as f:
 		json.dump(missing, f)

@@ -1,4 +1,3 @@
-import json
 import os
 import sys
 import requests
@@ -20,9 +19,10 @@ class APIError(IOError):
 
 
 def url_fmt(arg):
-	if not isinstance(arg, str):
-		arg = str(arg).strip()
-	return urllib.quote(arg, '')
+	if not isinstance(arg, str) and not isinstance(arg, unicode):
+		arg = unicode(arg)
+	arg = arg.strip()
+	return urllib.quote(arg.encode('utf-8'), '')
 
 
 def enum_with_count(lst):
