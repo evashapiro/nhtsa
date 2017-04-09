@@ -1,81 +1,161 @@
 import os
+import numpy
 import pandas
-import time
-import sqlite3
 
 
 PATH = os.path.dirname(__file__)
-NCAP = [
-	os.path.join(PATH, 'ncap', filename) for filename in [
-	'2011_NCAP_Combined_Crashworthiness_Ratings_Calculator.csv',
-	'2012_NCAP_Combined_Crashworthiness_Ratings_Calculator.csv',
-	'2013_NCAP_Combined_Crashworthiness_Ratings_Calculator.csv',
-	'2014_NCAP_Combined_Crashworthiness_Ratings_Calculator.csv',
-	'2015_NCAP_Combined_Crashworthiness_Ratings_Calculator.csv',
-	'2016_NCAP_Combined_Crashworthiness_Ratings_Calculator.csv']
-]
-NCAP_HEADER = [
-	'date_on_web',
+
+dataoneFilepath = os.path.join(
+	PATH,
+	'TEMP-CROSSWALK-WORK',
+	'DataOne-unique-variables-for-crosswalk-to-NCAP-1990-2016MY.csv')
+
+ncap1117Filepath = os.path.join(
+	PATH,
+	'TEMP-CROSSWALK-WORK',
+	'NCAP-Safercar-unique-variables-for-crosswalk-to-DataOne-2011-2017MY.csv')
+
+ncap9010Filepath = os.path.join(
+	PATH,
+	'TEMP-CROSSWALK-WORK',
+	'NCAP-Safercar-unique-variables-for-crosswalk-to-DataOne-1990-2010MY.csv')
+
+misFilepath = os.path.join(
+	PATH,
+	'TEMP-CROSSWALK-WORK',
+	'mismatch.csv')
+
+crosswalkFilepath = os.path.join(
+		PATH,'crosswalk.csv')
+
+DATAONE_HEADER = [
 	'make',
 	'model',
-	'year',
-	'front_stars_driver',
-	'front_stars_passenger',
-	'front_stars_combiner',
-	'sidemdb_stars_driver',
-	'sidemdb_stars_passenger',
-	'sidemdb_stars_combiner',
-	'sidepole_stars_driver',
-	'overall_driver_stars_driver',
-	'overall_side_stars_combined',
-	'rollover_stars',
-	'combined_vss',
-	'combined_stars'
+	'myear',
+	'trim',
+	'style'
 ]
 
-FARS = {
-	i: os.path.join(PATH, 'fars', 'vehicle_%d.dta' % i) for i in range(1975, 2016)
+DATAONE_TYPES = {
+	'make': str,
+	'model': str,
+	'myear': numpy.int32,
+	'trim': str,
+	'style': str,
 }
 
-DB = os.path.join(PATH, 'dataset.db')
+NCAP1117_HEADER = [
+	'make',
+	'model',
+	'myear',
+	'body_style',
+	'vehicle_type',
+	'drive_train',
+	'production_release'
+]
 
+NCAP1117_TYPES = {
+	'make': str,
+	'model': str,
+	'myear': numpy.int32,
+	'body_style': str,
+	'vehicle_type': str,
+	'drive_train': 'S10',
+	'production_release': str
+}
 
-def load_fars():
-	print('generating FARS dataset, this will take a few minutes...')
-	dataset = pandas.DataFrame()
-	for (year, filename) in FILES.items():
-		start = time.time()
-		dataset = dataset.append(pandas.read_stata(filename))
-		elapsed = time.time() - start
-		print('{} took {:.2f}s'.format(year, elapsed))
-	conn = sqlite3.connect(DB)
-	conn.execute('DROP TABLE fars')
-	conn.text_factory = str
-	dataset.to_sql('fars', conn)
-	print('done.')
+NCAP9010_HEADER = [
+	'carid'
+	'make',
+	'model',
+	'myear',
+	'doors',
+	'size_class',
+	'sh_desc'
+]
 
+NCAP9010_HEADER = [
+	'carid': numpy.int32,
+	'make': str,
+	'model': str,
+	'myear': numpy.int32,
+	'doors': str,
+	'size_class': str,
+	'sh_desc': str
+]
 
-def load_ncap():
-	print('generating ncap dataset...')
-	dataset = pandas.DataFrame()
-	for filename in NCAP:
-		dataset = dataset.append(pandas.read_csv(
-			filename,
-			names=NCAP_HEADER,
-			skiprows=2,
+MISMATCH_HEADER = [
+	'ncap1117_index',
+	'make',
+	'model',
+	'myear',
+	'trim',
+	'style',
+	'ncap_index',
+	'make_ncap',
+	'model_ncap',
+	'myear_ncap',
+	'body_style',
+	'vehicle_type',
+	'drive_train',
+	'production_release',
+	'dataone_index'
+]
+
+MISMATCH_TYPES = {
+	'ncap1117_index': numpy.int32,
+	'make': str,
+	'model': str,
+	'myear': numpy.int32,
+	'trim': str,
+	'style': str,
+	'ncap_index': numpy.int32,
+	'make_ncap': str,
+	'model_ncap': str,
+	'myear_ncap': str,
+	'body_style': str,
+	'vehicle_type': str,
+	'drive_train': str,
+	'production_release': numpy.int32,
+	'dataone_index': numpy.int32
+}
+
+dataone = pandas.read_csv(
+			dataoneFilepath,
+			names=DATAONE_HEADER,
+			dtype=DATAONE_TYPES,
+			skiprows=1,
 			index_col=False,
-			usecols=range(len(NCAP_HEADER)),
-			na_values=['#VALUE!','#NUM!']))
-	conn = sqlite3.connect(DB)
-	conn.execute('DROP TABLE ncap')
-	conn.text_factory = str
-	dataset.to_sql('ncap', conn)
-	print('done.')
+			usecols=range(len(DATAONE_HEADER)),
+			na_values=['#VALUE!','#NUM!'])
+
+ncap1117 = pandas.read_csv(
+			ncap1117Filepath,
+			names=NCAP1117_HEADER,
+			dtype=NCAP1117_TYPES,
+			skiprows=1,
+			index_col=False,
+			usecols=range(len(NCAP1117_HEADER)),
+			na_values=['#VALUE!','#NUM!'])
+
+ncap9010 = pandas.read_csv(
+			ncap9010Filepath,
+			names=NCAP9010_HEADER,
+			dtype=NCAP9010_TYPES,
+			skiprows=1,
+			index_col=False,
+			usecols=range(len(NCAP9010_HEADER)),
+			na_values=['#VALUE!','#NUM!'])
 
 
-if __name__ == '__main__':
-	pass
-	#conn = sqlite3.connect(DB)
-	#conn.text_factory = str
-	#dataset = pandas.read_sql_query('''SELECT * from fars WHERE year = 1975''', conn)
-	#print dataset.describe()
+
+mismatch = pandas.read_csv(
+			misFilepath,
+			names=MISMATCH_HEADER,
+			dtype=MISMATCH_TYPES,
+			skiprows=1,
+			index_col=False,
+			usecols=range(len(MISMATCH_HEADER)),
+			na_values=['#VALUE!','#NUM!'])
+
+crosswalk = pandas.read_csv(crosswalkFilepath)
